@@ -5,7 +5,7 @@ using Wooting;
 
 namespace MuteButtonWooting
 {
-    class Wooting
+    class WootingHelper
     {
         public static bool IsRgbConnected => RGBControl.IsConnected();
 

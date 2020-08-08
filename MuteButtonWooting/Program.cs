@@ -19,7 +19,7 @@ namespace MuteButtonWooting
                     using (var microphone = MMDE.GetDevice(MICROPHONE))
                     {
                         microphone.AudioEndpointVolume.Mute = !microphone.AudioEndpointVolume.Mute;
-                        Wooting.UpdateButtonToCurrentState(microphone.AudioEndpointVolume.Mute);
+                        WootingHelper.UpdateButtonToCurrentState(microphone.AudioEndpointVolume.Mute);
                     }
                 }
 
