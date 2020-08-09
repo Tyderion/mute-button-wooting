@@ -18,13 +18,13 @@ namespace WootingService
         public WootingService()
         {
             InitializeComponent();
-            eventLog1 = new System.Diagnostics.EventLog();
-            if (!System.Diagnostics.EventLog.SourceExists("WootingService"))
+            log = new System.Diagnostics.EventLog();
+            if (!System.Diagnostics.EventLog.SourceExists("WootingLog"))
             {
-                System.Diagnostics.EventLog.CreateEventSource("WootingService", "WootingLog");
+                System.Diagnostics.EventLog.CreateEventSource("WootingLog", "WootingLog");
             }
-            eventLog1.Source = "WootingService";
-            eventLog1.Log = "WootingLog";
+            log.Source = "WootingLog";
+            log.Log = "WootingLog";
         }
 
         protected override void OnCustomCommand(int command)
@@ -37,32 +37,26 @@ namespace WootingService
                 {
                     try
                     {
-                        if (IsConnected)
-                        {
-                            WootingHelper.UpdateButtonToCurrentState(IsMute());
-                        }
+                        UpdateKeyColor();
                     } catch (Exception ex)
                     {
-                        eventLog1.WriteEntry("Update button failed: " + ex.Message, EventLogEntryType.Error, eventId++);
+                        log.WriteEntry("Update button failed: " + ex.Message, EventLogEntryType.Error, eventId++);
                     }
                 } else if (com == WootingCommands.Toggle)
                 {
                     try
                     {
                         ToggleMicrophone();
-                        if (IsConnected)
-                        {
-                            WootingHelper.UpdateButtonToCurrentState(IsMute());
-                        }
+                        UpdateKeyColor();
                     } catch (Exception ex)
                     {
-                        eventLog1.WriteEntry("Unable to Update Button " + ex.Message, EventLogEntryType.Error, eventId++);
+                        log.WriteEntry("Unable to Update Button " + ex.Message, EventLogEntryType.Error, eventId++);
                     }
                 }
 
             } catch (Exception ex)
             {
-                eventLog1.WriteEntry("Error: "+ ex.Message, EventLogEntryType.Error, eventId++);
+                log.WriteEntry("Error: "+ ex.Message, EventLogEntryType.Error, eventId++);
             }
         }
 
@@ -71,6 +65,7 @@ namespace WootingService
         {
 
             TryConnect();
+            UpdateKeyColor();
             // Set up a timer that triggers every minute.
             Timer timer = new Timer();
             timer.Interval = 60000; // 60 seconds
@@ -94,9 +89,23 @@ namespace WootingService
             }
             catch (Exception ex)
             {
-                eventLog1.WriteEntry("Could not find microphone " + ex.Message, EventLogEntryType.Error, eventId++);
+                log.WriteEntry("Could not find microphone " + ex.Message, EventLogEntryType.Error, eventId++);
             }
             return null;
+        }
+
+        private void UpdateKeyColor()
+        {
+            try
+            {
+                if (IsConnected)
+                {
+                    WootingHelper.UpdateButtonToCurrentState(IsMute());
+                }
+            } catch (Exception ex)
+            {
+                log.WriteEntry("Unable to update button state " + ex.Message, EventLogEntryType.Error, eventId++);
+            }
         }
 
         private void ToggleMicrophone()
@@ -114,17 +123,18 @@ namespace WootingService
             try
             {
                 IsConnected = WootingHelper.IsRgbConnected;
-                
+                log.WriteEntry("Connected to Keyboard", EventLogEntryType.Information, eventId++);
+
             }
             catch (Exception ex)
             {
-                eventLog1.WriteEntry("Not connected to keyboard: " + ex.Message, EventLogEntryType.Error, eventId++);
+                log.WriteEntry("Not connected to keyboard: " + ex.Message, EventLogEntryType.Error, eventId++);
 
             }
             try
             {
                 Microphone = GetMicrophone();
-                eventLog1.WriteEntry("Got Microphone " + Microphone.FriendlyName, EventLogEntryType.Information, eventId++);
+                log.WriteEntry("Got Microphone " + Microphone.FriendlyName, EventLogEntryType.Information, eventId++);
             } catch (Exception ex)
             {
 
@@ -146,11 +156,9 @@ namespace WootingService
             //eventLog1.WriteEntry("In OnContinue.");
         }
 
-        private void eventLog1_EntryWritten(object sender, EntryWrittenEventArgs e)
+        private void eventLog1_EntryWritten_1(object sender, EntryWrittenEventArgs e)
         {
 
         }
-
-
     }
 }
